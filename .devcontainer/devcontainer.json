@@ -28,7 +28,6 @@
         "files.autoSave": "onFocusChange"
       },
       "extensions": [
-        "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "github.codespaces",
         "github.copilot",
