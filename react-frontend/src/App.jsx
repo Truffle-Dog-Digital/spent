@@ -1,35 +1,31 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const user = null; // Replace with actual user authentication check later
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="App">
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Spent
+          </Typography>
+          {!user && (
+            <Button color="inherit">Sign In</Button>
+          )}
+        </Toolbar>
+      </AppBar>
+      <Box sx={{ p: 2 }}>
+        <h1>Welcome to My App</h1>
+        <p>Edit src/App.jsx and save to test HMR</p>
+      </Box>
+    </div>
+  );
 }
 
-export default App
+export default App;
