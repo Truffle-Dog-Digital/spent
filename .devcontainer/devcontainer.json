@@ -11,7 +11,12 @@
         "editor.codeActionsOnSave": {
           "source.fixAll.eslint": true
         },
-        "workbench.colorTheme": "Default Dark+"
+        "workbench.colorTheme": "Default Dark+",
+        "git.enableSmartCommit": true,
+        "git.autofetch": true,
+        "git.postCommitCommand": "push",
+        "git.confirmSync": false,
+        "git.autoStash": true
       },
       "extensions": [
         "dbaeumer.vscode-eslint",
@@ -30,5 +35,5 @@
       ]
     }
   },
-  "postCreateCommand": "./setup.sh"
+  "postCreateCommand": "./.devcontainer/devcontainer-postcreate.sh"
 }
