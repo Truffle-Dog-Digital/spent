@@ -1,8 +1,5 @@
 {
   "name": "Spent",
-  "build": {
-    "dockerfile": ".devcontainer/Dockerfile"
-  },
   "customizations": {
     "vscode": {
       "settings": {
