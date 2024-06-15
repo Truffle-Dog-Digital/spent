@@ -13,5 +13,5 @@
       "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
     }
   },
-  "postCreateCommand": "npm install"
+  "postCreateCommand": "npm install && cd react-frontend && npm install"
 }
