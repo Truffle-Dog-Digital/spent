@@ -1,9 +1,9 @@
-import React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
+import React from "react";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
 
 function App() {
   const user = null; // Replace with actual user authentication check later
@@ -15,9 +15,7 @@ function App() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Spent
           </Typography>
-          {!user && (
-            <Button color="inherit">Sign In</Button>
-          )}
+          {!user && <Button color="inherit">Sign In</Button>}
         </Toolbar>
       </AppBar>
       <Box sx={{ p: 2 }}>
