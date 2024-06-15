@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "Personal spend tracking app",
   "scripts": {
-    "dev": "cross-env $(cat .env) concurrently \"cd react-frontend && npm run dev\" \"firebase emulators:start --project $FIREBASE_PROJECT_ID\"",
+    "dev": "dotenv -e .env -- sh -c 'echo $FIREBASE_PROJECT_ID && concurrently \"cd react-frontend && npm run dev\" \"firebase emulators:start --project $FIREBASE_PROJECT_ID\"'",
     "deploy": "firebase deploy",
     "emulators:start": "firebase emulators:start",
     "lint": "eslint . --ext .js,.jsx"
   },
   "devDependencies": {
     "concurrently": "^8.0.1",
+    "dotenv-cli": "^7.4.2",
     "eslint": "^8.5.0",
     "firebase-tools": "^11.1.0"
   },
