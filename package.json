@@ -1,0 +1,17 @@
+{
+  "name": "budgie",
+  "version": "1.0.0",
+  "description": "Personal spend tracking app",
+  "scripts": {
+    "dev": "concurrently \"cd react-frontend && npm run dev\" \"firebase emulators:start\"",
+    "deploy": "firebase deploy",
+    "emulators:start": "firebase emulators:start",
+    "lint": "eslint . --ext .js,.jsx"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.1",
+    "eslint": "^8.5.0",
+    "firebase-tools": "^11.1.0"
+  },
+  "private": true
+}
