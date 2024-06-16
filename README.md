@@ -30,3 +30,4 @@ The easiest way to get this up and running is to use the pre-configured codespac
   - cmd-click or ctrl-click the link it creates for you
   - follow the prompts, press the two blue confirmation buttons and the "copy" button
   - paste that code back into the terminal window
+- in the root directory, run `npm run local`
