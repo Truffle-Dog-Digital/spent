@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "description": "Personal spend tracking app",
   "scripts": {
-    "dev": "dotenv -e .env -- sh -c 'echo $FIREBASE_PROJECT_ID && concurrently \"cd react-frontend && npm run dev\" \"firebase emulators:start --project $FIREBASE_PROJECT_ID\"'",
+    "local": "cross-env VITE_LOCAL_DEV=true dotenv -e .env -- sh -c 'concurrently \"cd react-frontend && npm run local\" \"firebase emulators:start --project $FIREBASE_PROJECT_ID\"'",
     "deploy": "firebase deploy",
-    "emulators:start": "firebase emulators:start",
     "lint": "eslint . --ext .js,.jsx"
   },
   "devDependencies": {
@@ -17,6 +16,7 @@
   "private": true,
   "dependencies": {
     "cross-env": "^7.0.3",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "dotenv-expand": "^11.0.6"
   }
 }
