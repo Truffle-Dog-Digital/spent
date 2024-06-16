@@ -22,7 +22,7 @@ const functions = getFunctions(app);
 // Use emulators in development
 if (import.meta.env.VITE_LOCAL_DEV === "true") {
   connectAuthEmulator(auth, `http://localhost:9099`);
-  connectDatabaseEmulator(database, "localhost", 9000);
+  connectDatabaseEmulator(firestore, "localhost", 8085);
   connectFunctionsEmulator(functions, "localhost", 5001);
 }
 

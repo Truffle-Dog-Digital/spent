@@ -18,8 +18,8 @@
       "port": 5001,
       "host": "0.0.0.0"
     },
-    "database": {
-      "port": 9000,
+    "firestore": {
+      "port": 8085,
       "host": "0.0.0.0"
     },
     "ui": {
