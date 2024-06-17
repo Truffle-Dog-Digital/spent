@@ -1,5 +1,5 @@
 // src/components/CSVLoader.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
@@ -11,8 +11,7 @@ import Typography from "@mui/material/Typography";
 const CSVLoader = ({ menuAnchorEl, handleCloseMenu }) => {
   const [summary, setSummary] = useState(null);
 
-  const handleFileChange = async (event) => {
-    const file = event.target.files[0];
+  const handleFileChange = async (file) => {
     if (file) {
       try {
         const text = await file.text();
@@ -37,6 +36,26 @@ const CSVLoader = ({ menuAnchorEl, handleCloseMenu }) => {
     }
   };
 
+  useEffect(() => {
+    const handleDrop = (event) => {
+      event.preventDefault();
+      const file = event.dataTransfer.files[0];
+      handleFileChange(file);
+    };
+
+    const handleDragOver = (event) => {
+      event.preventDefault();
+    };
+
+    window.addEventListener("drop", handleDrop);
+    window.addEventListener("dragover", handleDragOver);
+
+    return () => {
+      window.removeEventListener("drop", handleDrop);
+      window.removeEventListener("dragover", handleDragOver);
+    };
+  }, []);
+
   return (
     <>
       <Menu
@@ -60,7 +79,7 @@ const CSVLoader = ({ menuAnchorEl, handleCloseMenu }) => {
               type="file"
               accept=".csv"
               style={{ display: "none" }}
-              onChange={handleFileChange}
+              onChange={(e) => handleFileChange(e.target.files[0])}
             />
           </label>
         </MenuItem>
