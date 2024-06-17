@@ -29,7 +29,7 @@ function App() {
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
-  const [processing, setProcessing] = useState(false); // New state to track if a file is being processed
+  const [dragging, setDragging] = useState(false); // New state for managing drag status
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -74,14 +74,10 @@ function App() {
   };
 
   const handleFileChange = async (event) => {
-    // Check if a file is already being processed
-    if (processing) return;
-
     const file = event.target.files
       ? event.target.files[0]
       : event.dataTransfer.files[0];
     if (file) {
-      setProcessing(true);
       setLoading(true);
       try {
         console.log("Loading file...");
@@ -104,10 +100,18 @@ function App() {
         console.error("Error reading file: ", error);
       } finally {
         setLoading(false);
-        setProcessing(false); // Reset the processing flag
         handleCloseMenu();
       }
     }
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    setDragging(true); // Set dragging state to true when dragging over the drop area
+  };
+
+  const handleDragLeave = () => {
+    setDragging(false); // Set dragging state to false when leaving the drop area
   };
 
   return (
@@ -189,9 +193,14 @@ function App() {
           justifyContent: "center",
           border: "2px dashed grey",
           borderRadius: "4px",
+          backgroundColor: dragging ? "rgba(0, 123, 255, 0.1)" : "transparent", // Change background color when dragging
         }}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleFileChange}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={(event) => {
+          handleDragLeave();
+          handleFileChange(event);
+        }}
       >
         Drag and drop a CSV file here or use the menu to upload.
         {loading && (
