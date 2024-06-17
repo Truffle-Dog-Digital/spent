@@ -8,6 +8,12 @@ import Avatar from "@mui/material/Avatar";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import MenuIcon from "@mui/icons-material/Menu";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
 import { auth } from "./firebaseConfig";
 import {
   signInWithPopup,
@@ -19,6 +25,8 @@ import {
 function App() {
   const [user, setUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  const [summary, setSummary] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -40,31 +48,72 @@ function App() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      handleCloseMenu();
+      handleCloseUserMenu();
     } catch (error) {
       console.error("Error signing out: ", error);
     }
   };
 
-  const handleOpenMenu = (event) => {
+  const handleOpenUserMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleCloseMenu = () => {
+  const handleCloseUserMenu = () => {
     setAnchorEl(null);
+  };
+
+  const handleOpenMenu = (event) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      try {
+        const text = await file.text();
+        const rows = text.split("\n").filter((row) => row.trim() !== "");
+        const dates = rows.map((row) => {
+          const dateStr = row.split(",")[0].trim();
+          const [day, month, year] = dateStr.split("/");
+          return new Date(`${year}-${month}-${day}`);
+        });
+        const startDate = new Date(Math.min(...dates));
+        const endDate = new Date(Math.max(...dates));
+        setSummary({
+          startDate: startDate.toISOString().split("T")[0],
+          endDate: endDate.toISOString().split("T")[0],
+          rowCount: rows.length,
+        });
+      } catch (error) {
+        console.error("Error reading file: ", error);
+      } finally {
+        handleCloseMenu();
+      }
+    }
   };
 
   return (
     <div className="App">
       <AppBar position="static">
         <Toolbar>
-          <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+          {user && (
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              onClick={handleOpenMenu}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+          <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
             <Typography variant="h6" component="div">
               Spent
             </Typography>
-          </Box>
-          <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
-            {/* Empty Box to center the title */}
           </Box>
           {user ? (
             <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -72,16 +121,42 @@ function App() {
                 <Avatar
                   src={user.photoURL}
                   alt={user.displayName}
-                  onClick={handleOpenMenu}
+                  onClick={handleOpenUserMenu}
                   sx={{ cursor: "pointer" }}
                 />
               </Tooltip>
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
-                onClose={handleCloseMenu}
+                onClose={handleCloseUserMenu}
               >
                 <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
+              </Menu>
+              <Menu
+                anchorEl={menuAnchorEl}
+                open={Boolean(menuAnchorEl)}
+                onClose={handleCloseMenu}
+              >
+                <MenuItem>
+                  <label
+                    htmlFor="upload-csv"
+                    style={{
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <UploadFileIcon />
+                    Load CSV
+                    <input
+                      id="upload-csv"
+                      type="file"
+                      accept=".csv"
+                      style={{ display: "none" }}
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                </MenuItem>
               </Menu>
             </Box>
           ) : (
@@ -91,7 +166,17 @@ function App() {
           )}
         </Toolbar>
       </AppBar>
-      <Box sx={{ p: 2 }}>{/* Main body content is cleared */}</Box>
+      <Box sx={{ p: 2 }}>{/* Content area */}</Box>
+      {summary && (
+        <Dialog open={Boolean(summary)} onClose={() => setSummary(null)}>
+          <DialogTitle>CSV Loaded</DialogTitle>
+          <DialogContent>
+            <Typography>Start Date: {summary.startDate}</Typography>
+            <Typography>End Date: {summary.endDate}</Typography>
+            <Typography>Number of Rows: {summary.rowCount}</Typography>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
