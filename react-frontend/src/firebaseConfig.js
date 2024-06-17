@@ -15,14 +15,14 @@ const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
-const firestore = getFirestore(app);
+const db = getFirestore(app);
 const functions = getFunctions(app);
 
 // If we're running in local mode, use emulators
 if (window.location.hostname === "localhost") {
   connectAuthEmulator(auth, "http://localhost:9099");
-  connectFirestoreEmulator(firestore, "localhost", 8085); // Firestore running on port 8085
+  connectFirestoreEmulator(db, "localhost", 8085); // Firestore running on port 8085
   connectFunctionsEmulator(functions, "localhost", 5001);
 }
 
-export { app, auth, firestore, functions };
+export { app, auth, db, functions };

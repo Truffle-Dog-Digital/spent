@@ -15,13 +15,14 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
-import { auth } from "./firebaseConfig";
+import { auth, db } from "./firebaseConfig";
 import {
   signInWithPopup,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
 } from "firebase/auth";
+import { collection, addDoc } from "firebase/firestore";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -29,11 +30,12 @@ function App() {
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
-  const [dragging, setDragging] = useState(false); // New state for managing drag status
+  const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
+      console.log("Auth state changed, user:", user);
     });
 
     return () => unsubscribe();
@@ -42,6 +44,7 @@ function App() {
   const handleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
+      console.log("Signing in...");
       await signInWithPopup(auth, provider);
     } catch (error) {
       console.error("Error signing in: ", error);
@@ -50,6 +53,7 @@ function App() {
 
   const handleSignOut = async () => {
     try {
+      console.log("Signing out...");
       await signOut(auth);
       handleCloseUserMenu();
     } catch (error) {
@@ -58,18 +62,22 @@ function App() {
   };
 
   const handleOpenUserMenu = (event) => {
+    console.log("Opening user menu");
     setAnchorEl(event.currentTarget);
   };
 
   const handleCloseUserMenu = () => {
+    console.log("Closing user menu");
     setAnchorEl(null);
   };
 
   const handleOpenMenu = (event) => {
+    console.log("Opening menu");
     setMenuAnchorEl(event.currentTarget);
   };
 
   const handleCloseMenu = () => {
+    console.log("Closing menu");
     setMenuAnchorEl(null);
   };
 
@@ -79,39 +87,87 @@ function App() {
       : event.dataTransfer.files[0];
     if (file) {
       setLoading(true);
+      console.log("Loading file...");
       try {
-        console.log("Loading file...");
         const text = await file.text();
         const rows = text.split("\n").filter((row) => row.trim() !== "");
-        console.log("File loaded successfully");
-        const dates = rows.map((row) => {
-          const dateStr = row.split(",")[0].trim();
-          const [day, month, year] = dateStr.split("/");
-          return new Date(`${year}-${month}-${day}`);
-        });
-        const startDate = new Date(Math.min(...dates));
-        const endDate = new Date(Math.max(...dates));
-        setSummary({
-          startDate: startDate.toISOString().split("T")[0],
-          endDate: endDate.toISOString().split("T")[0],
-          rowCount: rows.length,
-        });
+
+        if (rows[0].split(",").length === 4) {
+          console.log("Detected CBA Transaction format");
+          const transactions = rows.map((row) => {
+            const [dateStr, amountStr, description, extendedDescription] = row
+              .split(",")
+              .map((cell) => cell.trim());
+            const [day, month, year] = dateStr.split("/");
+            const date = `${year}-${month}-${day}`;
+            const amount = parseFloat(amountStr.replace(/"/g, ""));
+            const type = amount > 0 ? "DR" : "CR";
+            return {
+              account: "JNT",
+              date,
+              type,
+              amount: Math.abs(amount).toFixed(2),
+              description,
+              extendedDescription: description, // For now, extendedDescription is same as description
+            };
+          });
+
+          const startTime = Date.now();
+          for (const transaction of transactions) {
+            await addDoc(
+              collection(db, "users", user.uid, "transactions"),
+              transaction
+            );
+            console.log("Added transaction:", transaction);
+          }
+          const endTime = Date.now();
+          console.log(
+            `Added ${transactions.length} transactions in ${
+              endTime - startTime
+            } ms`
+          );
+
+          const dates = transactions.map((t) => new Date(t.date));
+          const startDate = new Date(Math.min(...dates));
+          const endDate = new Date(Math.max(...dates));
+          setSummary({
+            startDate: startDate.toISOString().split("T")[0],
+            endDate: endDate.toISOString().split("T")[0],
+            rowCount: transactions.length,
+          });
+
+          console.log("File loaded successfully and data added to Firestore");
+        } else {
+          console.error("File format not recognized");
+        }
       } catch (error) {
         console.error("Error reading file: ", error);
       } finally {
+        console.log("Setting loading to false and closing menu");
         setLoading(false);
         handleCloseMenu();
       }
+    } else {
+      console.log("No file selected");
     }
   };
 
   const handleDragOver = (event) => {
     event.preventDefault();
-    setDragging(true); // Set dragging state to true when dragging over the drop area
+    setDragging(true);
+    console.log("Dragging over");
   };
 
   const handleDragLeave = () => {
-    setDragging(false); // Set dragging state to false when leaving the drop area
+    setDragging(false);
+    console.log("Drag leave");
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setDragging(false);
+    console.log("File dropped");
+    handleFileChange(event);
   };
 
   return (
@@ -197,10 +253,7 @@ function App() {
         }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onDrop={(event) => {
-          handleDragLeave();
-          handleFileChange(event);
-        }}
+        onDrop={handleDrop}
       >
         Drag and drop a CSV file here or use the menu to upload.
         {loading && (
