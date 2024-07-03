@@ -1,20 +1,10 @@
 import React, { useEffect, useState } from "react";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
-import Avatar from "@mui/material/Avatar";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Tooltip from "@mui/material/Tooltip";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
 import CircularProgress from "@mui/material/CircularProgress";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
+import Typography from "@mui/material/Typography";
 import { auth } from "./firebaseConfig";
 import {
   signInWithPopup,
@@ -34,6 +24,8 @@ import {
   handleDragLeave,
   handleDrop,
 } from "./eventHandlers";
+import ToolbarComponent from "./ToolbarComponent";
+import "./App.css";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -54,95 +46,25 @@ function App() {
 
   return (
     <div className="App">
-      <AppBar position="static">
-        <Toolbar>
-          {user && (
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              onClick={(e) => handleOpenMenu(e, setMenuAnchorEl)}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
-          <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
-            <Typography variant="h6" component="div">
-              Spent
-            </Typography>
-          </Box>
-          {user ? (
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Tooltip title={user.email}>
-                <Avatar
-                  src={user.photoURL}
-                  alt={user.displayName}
-                  onClick={(e) => handleOpenUserMenu(e, setAnchorEl)}
-                  sx={{ cursor: "pointer" }}
-                />
-              </Tooltip>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={() => handleCloseUserMenu(setAnchorEl)}
-              >
-                <MenuItem
-                  onClick={() =>
-                    handleSignOut(auth, () => handleCloseUserMenu(setAnchorEl))
-                  }
-                >
-                  Sign Out
-                </MenuItem>
-              </Menu>
-              <Menu
-                anchorEl={menuAnchorEl}
-                open={Boolean(menuAnchorEl)}
-                onClose={() => handleCloseMenu(setMenuAnchorEl)}
-              >
-                <MenuItem>
-                  <label
-                    htmlFor="upload-csv"
-                    style={{
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    <UploadFileIcon />
-                    Load CSV
-                    <input
-                      id="upload-csv"
-                      type="file"
-                      accept=".csv"
-                      style={{ display: "none" }}
-                      onChange={(e) =>
-                        handleFileChange(e, user, setLoading, setSummary, () =>
-                          handleCloseMenu(setMenuAnchorEl)
-                        )
-                      }
-                    />
-                  </label>
-                </MenuItem>
-              </Menu>
-            </Box>
-          ) : (
-            <Button color="inherit" onClick={() => handleSignIn(auth)}>
-              Sign In
-            </Button>
-          )}
-        </Toolbar>
-      </AppBar>
+      <ToolbarComponent
+        user={user}
+        anchorEl={anchorEl}
+        menuAnchorEl={menuAnchorEl}
+        handleOpenMenu={handleOpenMenu}
+        handleCloseMenu={handleCloseMenu}
+        handleOpenUserMenu={handleOpenUserMenu}
+        handleCloseUserMenu={handleCloseUserMenu}
+        handleSignOut={handleSignOut}
+        handleSignIn={handleSignIn}
+        handleFileChange={handleFileChange}
+        setMenuAnchorEl={setMenuAnchorEl}
+        setAnchorEl={setAnchorEl}
+        auth={auth}
+        setLoading={setLoading}
+        setSummary={setSummary}
+      />
       <Box
-        sx={{
-          p: 2,
-          height: "calc(100vh - 64px)", // Adjust height to exclude AppBar
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          border: "2px dashed grey",
-          borderRadius: "4px",
-          backgroundColor: dragging ? "rgba(0, 123, 255, 0.1)" : "transparent", // Change background color when dragging
-        }}
+        className={`upload-container ${dragging ? "dragging" : ""}`}
         onDragOver={(e) => handleDragOver(e, setDragging)}
         onDragLeave={() => handleDragLeave(setDragging)}
         onDrop={(e) =>
@@ -155,19 +77,7 @@ function App() {
       >
         Drag and drop a CSV file here or use the menu to upload.
         {loading && (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: "rgba(255, 255, 255, 0.7)",
-            }}
-          >
+          <Box className="upload-overlay">
             <CircularProgress />
           </Box>
         )}
