@@ -75,11 +75,17 @@ function App() {
           )
         }
       >
-        Drag and drop a CSV file here or use the menu to upload.
-        {loading && (
-          <Box className="upload-overlay">
-            <CircularProgress />
-          </Box>
+        {user ? (
+          <>
+            Drag and drop a CSV file here or use the menu to upload.
+            {loading && (
+              <Box className="upload-overlay">
+                <CircularProgress />
+              </Box>
+            )}
+          </>
+        ) : (
+          <Typography>Sign in to get started</Typography>
         )}
       </Box>
       {summary && (
