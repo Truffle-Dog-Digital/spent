@@ -22,7 +22,18 @@ import {
   signOut,
   onAuthStateChanged,
 } from "firebase/auth";
-import { processSaveImportToFirestore } from "./processSaveImportToFirestore";
+import {
+  handleSignIn,
+  handleSignOut,
+  handleOpenUserMenu,
+  handleCloseUserMenu,
+  handleOpenMenu,
+  handleCloseMenu,
+  handleFileChange,
+  handleDragOver,
+  handleDragLeave,
+  handleDrop,
+} from "./eventHandlers";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -41,77 +52,6 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  const handleSignIn = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      console.log("Signing in...");
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Error signing in: ", error);
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      console.log("Signing out...");
-      await signOut(auth);
-      handleCloseUserMenu();
-    } catch (error) {
-      console.error("Error signing out: ", error);
-    }
-  };
-
-  const handleOpenUserMenu = (event) => {
-    console.log("Opening user menu");
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseUserMenu = () => {
-    console.log("Closing user menu");
-    setAnchorEl(null);
-  };
-
-  const handleOpenMenu = (event) => {
-    console.log("Opening menu");
-    setMenuAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseMenu = () => {
-    console.log("Closing menu");
-    setMenuAnchorEl(null);
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files
-      ? event.target.files[0]
-      : event.dataTransfer.files[0];
-    processSaveImportToFirestore(
-      file,
-      user,
-      setLoading,
-      setSummary,
-      handleCloseMenu
-    );
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-    setDragging(true);
-    console.log("Dragging over");
-  };
-
-  const handleDragLeave = () => {
-    setDragging(false);
-    console.log("Drag leave");
-  };
-
-  const handleDrop = (event) => {
-    event.preventDefault();
-    setDragging(false);
-    console.log("File dropped");
-    handleFileChange(event);
-  };
-
   return (
     <div className="App">
       <AppBar position="static">
@@ -121,7 +61,7 @@ function App() {
               edge="start"
               color="inherit"
               aria-label="menu"
-              onClick={handleOpenMenu}
+              onClick={(e) => handleOpenMenu(e, setMenuAnchorEl)}
             >
               <MenuIcon />
             </IconButton>
@@ -137,21 +77,27 @@ function App() {
                 <Avatar
                   src={user.photoURL}
                   alt={user.displayName}
-                  onClick={handleOpenUserMenu}
+                  onClick={(e) => handleOpenUserMenu(e, setAnchorEl)}
                   sx={{ cursor: "pointer" }}
                 />
               </Tooltip>
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
-                onClose={handleCloseUserMenu}
+                onClose={() => handleCloseUserMenu(setAnchorEl)}
               >
-                <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
+                <MenuItem
+                  onClick={() =>
+                    handleSignOut(auth, () => handleCloseUserMenu(setAnchorEl))
+                  }
+                >
+                  Sign Out
+                </MenuItem>
               </Menu>
               <Menu
                 anchorEl={menuAnchorEl}
                 open={Boolean(menuAnchorEl)}
-                onClose={handleCloseMenu}
+                onClose={() => handleCloseMenu(setMenuAnchorEl)}
               >
                 <MenuItem>
                   <label
@@ -169,14 +115,18 @@ function App() {
                       type="file"
                       accept=".csv"
                       style={{ display: "none" }}
-                      onChange={handleFileChange}
+                      onChange={(e) =>
+                        handleFileChange(e, user, setLoading, setSummary, () =>
+                          handleCloseMenu(setMenuAnchorEl)
+                        )
+                      }
                     />
                   </label>
                 </MenuItem>
               </Menu>
             </Box>
           ) : (
-            <Button color="inherit" onClick={handleSignIn}>
+            <Button color="inherit" onClick={() => handleSignIn(auth)}>
               Sign In
             </Button>
           )}
@@ -193,9 +143,15 @@ function App() {
           borderRadius: "4px",
           backgroundColor: dragging ? "rgba(0, 123, 255, 0.1)" : "transparent", // Change background color when dragging
         }}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        onDragOver={(e) => handleDragOver(e, setDragging)}
+        onDragLeave={() => handleDragLeave(setDragging)}
+        onDrop={(e) =>
+          handleDrop(e, setDragging, (e) =>
+            handleFileChange(e, user, setLoading, setSummary, () =>
+              handleCloseMenu(setMenuAnchorEl)
+            )
+          )
+        }
       >
         Drag and drop a CSV file here or use the menu to upload.
         {loading && (
